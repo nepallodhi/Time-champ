@@ -1,0 +1,18 @@
+:schedule:
+  daily_summary_job:
+    cron: '0 0 * * *'  # Daily at midnight
+    class: DailySummaryJob
+    queue: default
+    description: "Aggregates daily work session data and calculates productivity scores"
+
+  idle_detection_job:
+    every: '1m'  # Every minute
+    class: IdleDetectionJob
+    queue: default
+    description: "Detects idle users and creates alerts"
+
+  overtime_alert_job:
+    every: '30m'  # Every 30 minutes
+    class: OvertimeAlertJob
+    queue: default
+    description: "Detects users working overtime and creates alerts"

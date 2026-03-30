@@ -1,0 +1,114 @@
+version: '3.7'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: workpulse_postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-password}
+      POSTGRES_DB: ${DATABASE_NAME:-workpulse_development}
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-postgres}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - workpulse_network
+
+  # Redis Cache & Queue
+  redis:
+    image: redis:7-alpine
+    container_name: workpulse_redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - workpulse_network
+
+  # Rails API Service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: workpulse_api
+    command: sh -c "bundle exec rails db:migrate && bundle exec rails server -b 0.0.0.0"
+    volumes:
+      - .:/rails
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - RAILS_ENV=${RAILS_ENV:-development}
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USERNAME=${DATABASE_USERNAME:-postgres}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:-password}
+      - DATABASE_NAME=${DATABASE_NAME:-workpulse_development}
+      - REDIS_URL=redis://redis:6379/1
+      - PORT=3000
+      - API_BASE_URL=${API_BASE_URL:-http://localhost:3000}
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/up" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    stop_grace_period: 30s
+    restart: unless-stopped
+    networks:
+      - workpulse_network
+
+  # Sidekiq Worker Service
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: workpulse_worker
+    command: bundle exec sidekiq
+    volumes:
+      - .:/rails
+    environment:
+      - RAILS_ENV=${RAILS_ENV:-development}
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USERNAME=${DATABASE_USERNAME:-postgres}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:-password}
+      - DATABASE_NAME=${DATABASE_NAME:-workpulse_development}
+      - REDIS_URL=redis://redis:6379/1
+    depends_on:
+      - postgres
+      - redis
+      - api
+    healthcheck:
+      disable: true
+    stop_grace_period: 30s
+    restart: unless-stopped
+    networks:
+      - workpulse_network
+
+networks:
+  workpulse_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

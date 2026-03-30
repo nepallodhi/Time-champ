@@ -1,0 +1,2473 @@
+{
+  "info": {
+    "name": "WorkPulse API",
+    "description": "Complete API collection for WorkPulse workforce productivity tracking platform.\n\nWebSocket Testing:\n- Connect to: ws://localhost:3000/cable?token={{token}}\n- Subscribe to OrganizationChannel: {\"command\":\"subscribe\",\"identifier\":\"{\\\"channel\\\":\\\"OrganizationChannel\\\"}\"}\n- Subscribe to UserChannel: {\"command\":\"subscribe\",\"identifier\":\"{\\\"channel\\\":\\\"UserChannel\\\"}\"}\n\nNote: WebSocket requests must be created separately in Postman (New > WebSocket Request). The identifier field must be a JSON string, not an object.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.access_token || jsonData.token);",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organization_name\": \"Acme Corp\",\n  \"user\": {\n    \"email\": \"admin@acme.com\",\n    \"password\": \"password123\",\n    \"name\": \"John Doe\",\n    \"role\": \"admin\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.access_token || jsonData.token);",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@acme.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.access_token || jsonData.token);",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/statistics",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "dashboard",
+                "statistics"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sessions",
+      "item": [
+        {
+          "name": "List Sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sessions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Start Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sessions/start",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sessions",
+                "start"
+              ]
+            },
+            "description": "Start a work session. Accepts user_id (optional, defaults to current user). Admins can start for any user, managers can start for their team members.\n\n**Response (201 Created):**\n```json\n{\n  \"session_id\": 123,\n  \"session\": {\n    \"id\": 123,\n    \"user_id\": 1,\n    \"start_time\": \"2026-02-16T12:00:00Z\",\n    \"end_time\": null,\n    \"last_activity_at\": \"2026-02-16T12:00:00Z\",\n    \"total_active_seconds\": 0,\n    \"total_idle_seconds\": 0,\n    \"status\": \"active\"\n  }\n}\n```"
+          }
+        },
+        {
+          "name": "Get Active Session",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sessions/active",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sessions",
+                "active"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Stop Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sessions/:id/stop",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sessions",
+                ":id",
+                "stop"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Batch Activity",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sessions/:id/batch_activity?date=2026-02-16",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sessions",
+                ":id",
+                "batch_activity"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-02-16",
+                  "description": "Optional: Filter by date in YYYY-MM-DD format"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "762"
+                }
+              ]
+            },
+            "description": "Get batch activity data for a session. Returns activity data in the same format as POST batch_activity, including screenshots.\n\n**Response (200 OK):**\n```json\n{\n  \"sessionId\": 762,\n  \"timestamp\": \"2026-02-16T12:55:00Z\",\n  \"totalMinutes\": 10,\n  \"aggregatedData\": [\n    {\n      \"id\": 1,\n      \"fullTimestamp\": \"2026-02-16T10:58:57.353Z\",\n      \"activeSeconds\": 49,\n      \"idleSeconds\": 10,\n      \"keyboardEvents\": 1,\n      \"mouseEvents\": 39,\n      \"activeWindowTitle\": \"VS Code\",\n      \"windowTitles\": { \"VS Code\": 60 }\n    }\n  ],\n  \"hourlyActivity\": [\n    {\n      \"hour\": \"10:00\",\n      \"activeSeconds\": 49,\n      \"idleSeconds\": 10,\n      \"productivity_percentage\": 83.1,\n      \"topApp\": \"VS Code\"\n    }\n  ],\n  \"summary\": {\n    \"userId\": \"user@example.com\",\n    \"totalActiveSeconds\": 354,\n    \"totalIdleSeconds\": 245,\n    \"totalKeyboardEvents\": 1,\n    \"totalMouseEvents\": 322,\n    \"screenshots\": [\n      {\n        \"id\": 1,\n        \"timestamp\": \"2026-02-16T10:58:57.353Z\",\n        \"sessionId\": 762,\n        \"userId\": 1\n      }\n    ]\n  }\n}\n```"
+          }
+        },
+        {
+          "name": "Batch Activity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": 1771240077394,\n  \"timestamp\": \"2026-02-16T11:07:57.394Z\",\n  \"totalMinutes\": 1,\n  \"screenshots\": [\n    {\n      \"id\": \"ss1\",\n      \"timestamp\": \"2026-02-16T12:55:00.149Z\"\n    }\n  ],\n  \"summary\": {\n    \"userId\": \"antier@gmail.com\",\n    \"totalActiveSeconds\": 22,\n    \"totalIdleSeconds\": 37,\n    \"totalKeyboardEvents\": 0,\n    \"totalMouseEvents\": 21\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/sessions/:id/batch_activity",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sessions",
+                ":id",
+                "batch_activity"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Send batch activity data for a session. The session ID can be provided in the URL path or in the request body as `sessionId`.\n\n**Request Body Formats:**\n1. **Summary only (minimal):**\n```json\n{\n  \"sessionId\": 123,\n  \"timestamp\": \"2026-02-16T12:55:00.149Z\",\n  \"totalMinutes\": 1,\n  \"summary\": {\n    \"userId\": \"user@example.com\",\n    \"totalActiveSeconds\": 22,\n    \"totalIdleSeconds\": 37,\n    \"totalKeyboardEvents\": 0,\n    \"totalMouseEvents\": 21\n  }\n}\n```\n\n2. **With screenshots (top-level or in summary):**\n```json\n{\n  \"sessionId\": 123,\n  \"timestamp\": \"2026-02-16T12:55:00.149Z\",\n  \"totalMinutes\": 1,\n  \"screenshots\": [\n    {\n      \"id\": \"ss1\",\n      \"timestamp\": \"2026-02-16T12:55:00.149Z\"\n    }\n  ],\n  \"summary\": {\n    \"userId\": \"user@example.com\",\n    \"totalActiveSeconds\": 22,\n    \"totalIdleSeconds\": 37\n  }\n}\n```\n\n3. **With aggregatedData (full):**\n```json\n{\n  \"sessionId\": 123,\n  \"timestamp\": \"2026-02-16T12:55:00.149Z\",\n  \"totalMinutes\": 1,\n  \"aggregatedData\": [\n    {\n      \"fullTimestamp\": \"2026-02-16T10:58:57.353Z\",\n      \"activeSeconds\": 49,\n      \"idleSeconds\": 10,\n      \"keyboardEvents\": 1,\n      \"mouseEvents\": 39,\n      \"activeWindowTitle\": \"VS Code\",\n      \"windowTitles\": {\n        \"VS Code\": 60\n      }\n    }\n  ],\n  \"summary\": {\n    \"totalActiveSeconds\": 22,\n    \"totalIdleSeconds\": 37\n  }\n}\n```\n\n**Response (201 Created):**\n```json\n{\n  \"status\": \"success\",\n  \"message\": \"Batch activity data saved\",\n  \"minutes_saved\": 1,\n  \"session_id\": 123,\n  \"session\": {\n    \"id\": 123,\n    \"user_id\": 1,\n    \"start_time\": \"2026-02-16T12:00:00Z\",\n    \"end_time\": null,\n    \"last_activity_at\": \"2026-02-16T12:55:00Z\",\n    \"total_active_seconds\": 22,\n    \"total_idle_seconds\": 37,\n    \"status\": \"active\"\n  }\n}\n```"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Screenshots",
+      "item": [
+        {
+          "name": "List Screenshots",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/screenshots?date=2026-02-11&session_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "screenshots"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-02-11",
+                  "description": "Filter by date (optional)"
+                },
+                {
+                  "key": "session_id",
+                  "value": "1",
+                  "description": "Filter by session_id (optional)"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Screenshot",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/screenshots/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "screenshots",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Screenshot Image",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/screenshots/:id/image",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "screenshots",
+                ":id",
+                "image"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "4"
+                }
+              ]
+            },
+            "description": "Get the actual screenshot image file. Returns the PNG image directly.\n\n**Response:**\n- Content-Type: `image/png`\n- Returns the raw image file\n- Can be displayed in browser or saved to disk\n\n**Example Usage:**\n- Open in browser: `https://your-api.com/api/v1/screenshots/4/image`\n- Display in HTML: `<img src=\"/api/v1/screenshots/4/image\" />`\n- Download: Use `curl` or `wget` with Authorization header"
+          }
+        },
+        {
+          "name": "Create Screenshot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"timestamp\": \"2026-02-11T10:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sessions/:session_id/screenshots",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sessions",
+                ":session_id",
+                "screenshots"
+              ],
+              "variable": [
+                {
+                  "key": "session_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        {
+          "name": "List Attendance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/attendance?start_date=2026-01-11&end_date=2026-02-11",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attendance"
+              ],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2026-01-11",
+                  "description": "Start date (default: 30 days ago)"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2026-02-11",
+                  "description": "End date (default: today)"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User Attendance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/attendance/:id?start_date=2026-01-11&end_date=2026-02-11",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attendance",
+                ":id"
+              ],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2026-01-11",
+                  "description": "Start date (default: 30 days ago)"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2026-02-11",
+                  "description": "End date (default: today)"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Activity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/attendance/update_activity",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attendance",
+                "update_activity"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Activities",
+      "item": [
+        {
+          "name": "Log Activity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activity_type\": \"active\",\n  \"duration_seconds\": 60,\n  \"app_name\": \"VS Code\",\n  \"url\": \"https://github.com\",\n  \"timestamp\": \"2026-02-11T10:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sessions/:id/activity",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sessions",
+                ":id",
+                "activity"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "List Projects",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"project\": {\n    \"name\": \"Website Redesign\",\n    \"description\": \"Complete redesign of company website\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/projects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Project",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Project",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"project\": {\n    \"name\": \"Website Redesign v2\",\n    \"description\": \"Updated description\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/projects/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Project",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Assign User to Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/projects/:id/assign_user",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                ":id",
+                "assign_user"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Managers",
+      "item": [
+        {
+          "name": "List Managers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/managers?organization_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "managers"
+              ],
+              "query": [
+                {
+                  "key": "organization_id",
+                  "value": "1",
+                  "description": "Filter by organization_id (optional, defaults to current user's org)"
+                }
+              ]
+            },
+            "description": "Get all managers in an organization. Admin only."
+          }
+        },
+        {
+          "name": "Add Employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/managers/:id/add_employee",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "managers",
+                ":id",
+                "add_employee"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remove Employee",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/managers/:id/employees/:employee_id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "managers",
+                ":id",
+                "employees",
+                ":employee_id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                },
+                {
+                  "key": "employee_id",
+                  "value": "2"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Alerts",
+      "item": [
+        {
+          "name": "List Alerts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/alerts?unresolved=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "alerts"
+              ],
+              "query": [
+                {
+                  "key": "unresolved",
+                  "value": "true",
+                  "description": "Filter for unresolved alerts only"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Alert",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/alerts/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "alerts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Resolve Alert",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/alerts/:id/resolve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "alerts",
+                ":id",
+                "resolve"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users?manager_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "manager_id",
+                  "value": "1",
+                  "description": "Filter users by manager_id (optional, for admins/managers only)"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User Activity (with date)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/:id?date=2026-02-16",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-02-16",
+                  "description": "Date in YYYY-MM-DD format (required for detailed activity)"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get detailed user activity for a specific date. Includes metrics, hourly intensity, telemetry, screenshots, and activity_minutes. Manager/Admin only."
+          }
+        },
+        {
+          "name": "Get User Activity Minutes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/:id/activity_minutes?date=2026-02-16",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id",
+                "activity_minutes"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-02-16",
+                  "description": "Date in YYYY-MM-DD format (optional, defaults to today)"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get minute-by-minute activity data for a user. Manager/Admin only."
+          }
+        },
+        {
+          "name": "Get User Screenshots",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/:id/screenshots?date=2026-02-16&session_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id",
+                "screenshots"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-02-16",
+                  "description": "Filter by date in YYYY-MM-DD format (optional)"
+                },
+                {
+                  "key": "session_id",
+                  "value": "1",
+                  "description": "Filter by session_id (optional)"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get screenshots for a user. Manager/Admin only."
+          }
+        },
+        {
+          "name": "Get User Batch Activity",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/:id/batch_activity?date=2026-02-16&session_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id",
+                "batch_activity"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-02-16",
+                  "description": "Filter by date in YYYY-MM-DD format (optional)"
+                },
+                {
+                  "key": "session_id",
+                  "value": "1",
+                  "description": "Filter by session_id (optional)"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get complete batch activity data for a user, including all sessions with their activity minutes and screenshots. Returns data grouped by session with aggregated totals. Manager/Admin only.\n\n**Response (200 OK):**\n```json\n{\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\"\n  },\n  \"date\": \"2026-02-16\",\n  \"sessions\": [\n    {\n      \"sessionId\": 123,\n      \"startTime\": \"2026-02-16T08:00:00Z\",\n      \"endTime\": \"2026-02-16T17:00:00Z\",\n      \"lastActivityAt\": \"2026-02-16T16:58:00Z\",\n      \"status\": \"stopped\",\n      \"totalMinutes\": 480,\n      \"aggregatedData\": [\n        {\n          \"id\": 1,\n          \"fullTimestamp\": \"2026-02-16T08:00:00Z\",\n          \"activeSeconds\": 55,\n          \"idleSeconds\": 5,\n          \"keyboardEvents\": 120,\n          \"mouseEvents\": 80,\n          \"activeWindowTitle\": \"VS Code\",\n          \"windowTitles\": {},\n          \"projectId\": 1,\n          \"taskId\": 5,\n          \"projectName\": \"Time Champ\",\n          \"taskName\": \"API Development\",\n          \"activeUrl\": null,\n          \"status\": \"Active\",\n          \"screenshotPath\": null\n        }\n      ],\n      \"summary\": {\n        \"totalActiveSeconds\": 26400,\n        \"totalIdleSeconds\": 2400,\n        \"totalKeyboardEvents\": 57600,\n        \"totalMouseEvents\": 38400,\n        \"screenshots\": [\n          {\n            \"id\": 1,\n            \"timestamp\": \"2026-02-16T08:05:00Z\",\n            \"sessionId\": 123,\n            \"userId\": 1,\n            \"filePath\": \"/path/to/screenshot.png\",\n            \"imageUrl\": \"/api/v1/screenshots/1/image\"\n          }\n        ]\n      }\n    }\n  ],\n  \"total_sessions\": 1,\n  \"aggregated_totals\": {\n    \"total_active_seconds\": 26400,\n    \"total_idle_seconds\": 2400,\n    \"total_keyboard_events\": 57600,\n    \"total_mouse_events\": 38400,\n    \"total_screenshots\": 48\n  }\n}\n```"
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"mansi\",\n  \"email\": \"mansi@gmail.com\",\n  \"password\": \"Test@123\",\n  \"role\": \"admin\",\n  \"functional_unit\": \"Engineer\",\n  \"manager_id\": null,\n  \"organisation_id\": \"org-1771055310772\",\n  \"is_owner\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user\": {\n    \"name\": \"Jane Doe\",\n    \"status\": \"online\",\n    \"functional_unit\": \"Senior Engineer\",\n    \"role\": \"manager\",\n    \"manager_id\": 1,\n    \"is_owner\": false\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Job Departments",
+      "item": [
+        {
+          "name": "List Job Departments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job_departments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job_departments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Job Department",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job_department\": {\n    \"job_dept\": \"Engineering\",\n    \"name\": \"Software Engineering\",\n    \"description\": \"Software development and engineering department\",\n    \"salary_range\": \"$50,000 - $150,000\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/job_departments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job_departments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Job Department",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job_departments/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job_departments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Job Department",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job_department\": {\n    \"name\": \"Senior Software Engineering\",\n    \"description\": \"Updated description\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/job_departments/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job_departments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Job Department",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job_departments/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job_departments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Salary Bonuses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job_departments/:job_department_id/salary_bonuses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job_departments",
+                ":job_department_id",
+                "salary_bonuses"
+              ],
+              "variable": [
+                {
+                  "key": "job_department_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Salary Bonus",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"salary_bonus\": {\n    \"amount\": 75000.00,\n    \"annual\": true,\n    \"bonus\": 10000.00\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/job_departments/:job_department_id/salary_bonuses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job_departments",
+                ":job_department_id",
+                "salary_bonuses"
+              ],
+              "variable": [
+                {
+                  "key": "job_department_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Salary Bonus",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job_departments/:job_department_id/salary_bonuses/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job_departments",
+                ":job_department_id",
+                "salary_bonuses",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "job_department_id",
+                  "value": "1"
+                },
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Salary Bonus",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "ngrok-skip-browser-warning",
+                "value": "true",
+                "description": "Skip ngrok browser warning page"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"salary_bonus\": {\n    \"amount\": 80000.00,\n    \"annual\": true,\n    \"bonus\": 12000.00\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/job_departments/:job_department_id/salary_bonuses/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job_departments",
+                ":job_department_id",
+                "salary_bonuses",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "job_department_id",
+                  "value": "1"
+                },
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Salary Bonus",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job_departments/:job_department_id/salary_bonuses/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job_departments",
+                ":job_department_id",
+                "salary_bonuses",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "job_department_id",
+                  "value": "1"
+                },
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employee Management",
+      "item": [
+        {
+          "name": "User Qualifications",
+          "item": [
+            {
+              "name": "List Qualifications",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/qualifications",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "qualifications"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create Qualification",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"qualification\": {\n    \"job_id\": 1,\n    \"position\": \"Senior Developer\",\n    \"requirements\": \"5+ years experience, Ruby on Rails, PostgreSQL\",\n    \"date_in\": \"2026-01-15\"\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/qualifications",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "qualifications"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Qualification",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/qualifications/:id",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "qualifications",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update Qualification",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"qualification\": {\n    \"position\": \"Lead Developer\",\n    \"requirements\": \"Updated requirements\"\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/qualifications/:id",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "qualifications",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Delete Qualification",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/qualifications/:id",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "qualifications",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "User Leaves",
+          "item": [
+            {
+              "name": "List Leaves",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/leaves?status=pending",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "leaves"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "pending",
+                      "description": "Filter by status: pending, approved, rejected"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create Leave",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"leave\": {\n    \"date\": \"2026-02-20\",\n    \"reason\": \"Personal leave\",\n    \"status\": \"pending\"\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/leaves",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "leaves"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Leave",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/leaves/:id",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "leaves",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Approve Leave",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/leaves/:id/approve",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "leaves",
+                    ":id",
+                    "approve"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Reject Leave",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/leaves/:id/reject",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "leaves",
+                    ":id",
+                    "reject"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update Leave",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"leave\": {\n    \"date\": \"2026-02-21\",\n    \"reason\": \"Updated reason\"\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/leaves/:id",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "leaves",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Delete Leave",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/leaves/:id",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "leaves",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "User Payrolls",
+          "item": [
+            {
+              "name": "List Payrolls",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/payrolls?date=2026-02-01",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "payrolls"
+                  ],
+                  "query": [
+                    {
+                      "key": "date",
+                      "value": "2026-02-01",
+                      "description": "Filter by date (optional)"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create Payroll",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"payroll\": {\n    \"job_id\": 1,\n    \"salary_id\": 1,\n    \"leave_id\": null,\n    \"date\": \"2026-02-01\",\n    \"report\": \"Monthly payroll for February 2026\",\n    \"total_amount\": 85000.00\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/payrolls",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "payrolls"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Payroll",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/payrolls/:id",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "payrolls",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update Payroll",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"payroll\": {\n    \"report\": \"Updated payroll report\",\n    \"total_amount\": 90000.00\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/payrolls/:id",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "payrolls",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Delete Payroll",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/:user_id/payrolls/:id",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":user_id",
+                    "payrolls",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Daily Summaries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/daily?start_date=2026-01-11&end_date=2026-02-11",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "daily"
+              ],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2026-01-11",
+                  "description": "Start date (default: 7 days ago)"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2026-02-11",
+                  "description": "End date (default: today)"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "User Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/user/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "user",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>WorkPulse Desktop Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #667eea;
+    }
+
+    .status {
+      text-align: center;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .status.active {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .button {
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 10px;
+    }
+
+    .button.start {
+      background: #28a745;
+      color: white;
+    }
+
+    .button.start:hover {
+      background: #218838;
+    }
+
+    .button.stop {
+      background: #dc3545;
+      color: white;
+    }
+
+    .button.stop:hover {
+      background: #c82333;
+    }
+
+    .button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .info {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .info-item {
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .info-label {
+      font-weight: bold;
+      color: #666;
+    }
+
+    .config-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #ddd;
+    }
+
+    .config-item {
+      margin-bottom: 15px;
+    }
+
+    .config-item label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #666;
+    }
+
+    .config-item input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>🖥️ WorkPulse Desktop Tracker</h1>
+
+    <div id="status" class="status inactive">
+      <span id="statusText">Tracking: Inactive</span>
+      <div id="timer" style="font-size: 1.2em; margin-top: 5px; display: none;">00:00:00</div>
+    </div>
+
+    <button id="startBtn" class="button start">Start Tracking</button>
+    <button id="stopBtn" class="button stop" disabled>Stop Tracking</button>
+
+    <div class="info" id="info">
+      <div class="info-item">
+        <span class="info-label">Session ID:</span>
+        <span id="sessionId">-</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Status:</span>
+        <span id="trackingStatus">Not tracking</span>
+      </div>
+    </div>
+
+    <div id="errorMessage"
+      style="display: none; margin-top: 15px; padding: 15px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; color: #856404;">
+      <strong>⚠️ Notice:</strong> <span id="errorText"></span>
+    </div>
+
+    <div class="config-section" id="statisticsSection" style="display: none;">
+      <h3>Dashboard Statistics</h3>
+      <div class="info">
+        <div class="info-item">
+          <span class="info-label">Employees:</span>
+          <span id="employeesCount">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Team Productivity:</span>
+          <span id="teamProductivity">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Total Projects:</span>
+          <span id="projectCount">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Active Projects:</span>
+          <span id="activeProjects">-</span>
+        </div>
+      </div>
+      <button class="button start" onclick="refreshStatistics()">Refresh Statistics</button>
+    </div>
+
+    <div class="config-section">
+      <h3>Configuration</h3>
+      <div class="config-item">
+        <label>API URL:</label>
+        <input type="text" id="apiUrl" value="http://localhost:3000/api/v1">
+      </div>
+      <div class="config-item">
+        <label>Auth Token:</label>
+        <input type="password" id="token" placeholder="Enter your JWT token">
+      </div>
+      <div class="config-item">
+        <label>Screenshot Interval (seconds):</label>
+        <input type="number" id="screenshotInterval" value="300">
+      </div>
+      <div class="config-item">
+        <label>Idle Threshold (seconds):</label>
+        <input type="number" id="idleThreshold" value="300">
+      </div>
+      <button class="button start" onclick="saveConfig()">Save Configuration</button>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    let isTracking = false;
+
+    let timerInterval;
+
+    function updateTimer() {
+      if (!isTracking || !currentSessionStart) return;
+
+      const now = Date.now();
+      const diff = now - currentSessionStart;
+
+      const hours = Math.floor(diff / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+
+      const timerEl = document.getElementById('timer');
+      if (timerEl) {
+        timerEl.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      }
+    }
+
+    function pad(n) {
+      return n < 10 ? '0' + n : n;
+    }
+
+    let currentSessionStart = null;
+
+    // Update UI based on tracking status
+    async function updateUI() {
+      const status = await ipcRenderer.invoke('get-tracking-status');
+      updateUIWithStatus(status);
+    }
+
+    function updateUIWithStatus(status) {
+      isTracking = status.isTracking;
+
+      const statusDiv = document.getElementById('status');
+      const statusText = document.getElementById('statusText');
+      const timerDiv = document.getElementById('timer');
+      const startBtn = document.getElementById('startBtn');
+      const stopBtn = document.getElementById('stopBtn');
+      const sessionIdSpan = document.getElementById('sessionId');
+      const trackingStatusSpan = document.getElementById('trackingStatus');
+
+      if (isTracking) {
+        if (!currentSessionStart) {
+          currentSessionStart = Date.now();
+          if (status.session && status.session.start_time) {
+            const startTime = new Date(status.session.start_time).getTime();
+            if (!isNaN(startTime)) currentSessionStart = startTime;
+          }
+        }
+
+        statusDiv.className = 'status active';
+        if (statusText) statusText.textContent = 'Tracking: Active';
+        if (timerDiv) timerDiv.style.display = 'block';
+
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        sessionIdSpan.textContent = status.session ? status.session.id : '-';
+        trackingStatusSpan.textContent = 'Tracking';
+        hideError();
+
+        if (!timerInterval) {
+          timerInterval = setInterval(updateTimer, 1000);
+          updateTimer();
+        }
+      } else {
+        currentSessionStart = null;
+        statusDiv.className = 'status inactive';
+        if (statusText) statusText.textContent = 'Tracking: Inactive';
+        if (timerDiv) timerDiv.style.display = 'none';
+
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        sessionIdSpan.textContent = '-';
+        trackingStatusSpan.textContent = 'Not tracking';
+
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+      }
+    }
+
+    // Hide error message
+    function hideError() {
+      const errorDiv = document.getElementById('errorMessage');
+      if (errorDiv) {
+        errorDiv.style.display = 'none';
+      }
+    }
+
+    // Show error message
+    function showError(message) {
+      const errorDiv = document.getElementById('errorMessage');
+      const errorText = document.getElementById('errorText');
+      if (errorDiv && errorText) {
+        errorText.textContent = message;
+        errorDiv.style.display = 'block';
+      }
+    }
+
+    // Listen for tracking errors from main process
+    ipcRenderer.on('tracking-error', (event, data) => {
+      if (data && data.message) {
+        showError(data.message);
+      }
+    });
+
+    // Listen for tracking updates from main process
+    ipcRenderer.on('tracking-update', (event, status) => {
+      isTracking = status.isTracking;
+      updateUIWithStatus(status);
+    });
+
+    function updateUIWithStatus(status) {
+      const statusDiv = document.getElementById('status');
+      const startBtn = document.getElementById('startBtn');
+      const stopBtn = document.getElementById('stopBtn');
+      const sessionIdSpan = document.getElementById('sessionId');
+      const trackingStatusSpan = document.getElementById('trackingStatus');
+
+      if (status.isTracking) {
+        statusDiv.className = 'status active';
+        statusDiv.textContent = 'Tracking: Active';
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        sessionIdSpan.textContent = status.session ? status.session.id : '-';
+        trackingStatusSpan.textContent = 'Tracking';
+        hideError();
+      } else {
+        statusDiv.className = 'status inactive';
+        statusDiv.textContent = 'Tracking: Inactive';
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        sessionIdSpan.textContent = '-';
+        trackingStatusSpan.textContent = 'Not tracking';
+      }
+    }
+
+    // Start tracking
+    document.getElementById('startBtn').addEventListener('click', async () => {
+      hideError(); // Hide previous errors
+      try {
+        await ipcRenderer.invoke('start-tracking');
+        await updateUI();
+        // Hide error on success
+        hideError();
+      } catch (error) {
+        showError('Failed to start tracking: ' + error.message);
+      }
+    });
+
+    // Stop tracking
+    document.getElementById('stopBtn').addEventListener('click', async () => {
+      try {
+        await ipcRenderer.invoke('stop-tracking');
+        await updateUI();
+      } catch (error) {
+        alert('Failed to stop tracking: ' + error.message);
+      }
+    });
+
+    // Load configuration
+    async function loadConfig() {
+      try {
+        const result = await ipcRenderer.invoke('get-config');
+        if (result.success && result.config) {
+          document.getElementById('apiUrl').value = result.config.apiUrl || '';
+          // Don't show token for security, or show masked/truncated if needed. 
+          // For now, let's leave it empty placeholder or show it if user wants to verify.
+          // Given the user asked, let's show it so they can verify.
+          document.getElementById('token').value = result.config.token || '';
+
+          if (result.config.screenshotInterval) {
+            document.getElementById('screenshotInterval').value = result.config.screenshotInterval / 1000;
+          }
+          if (result.config.idleThreshold) {
+            document.getElementById('idleThreshold').value = result.config.idleThreshold / 1000;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load config:', error);
+      }
+    }
+
+    // Save configuration
+    async function saveConfig() {
+      const config = {
+        apiUrl: document.getElementById('apiUrl').value,
+        token: document.getElementById('token').value,
+        screenshotInterval: parseInt(document.getElementById('screenshotInterval').value) * 1000,
+        idleThreshold: parseInt(document.getElementById('idleThreshold').value) * 1000
+      };
+
+      try {
+        await ipcRenderer.invoke('update-config', config);
+        alert('Configuration saved! Please restart the app for changes to take effect.');
+      } catch (error) {
+        alert('Failed to save configuration: ' + error.message);
+      }
+    }
+
+    // Fetch and display dashboard statistics
+    async function refreshStatistics() {
+      try {
+        const result = await ipcRenderer.invoke('get-dashboard-statistics');
+        const statsSection = document.getElementById('statisticsSection');
+
+        if (result.success && result.statistics) {
+          statsSection.style.display = 'block';
+          document.getElementById('employeesCount').textContent = result.statistics.employees_count || 0;
+          document.getElementById('teamProductivity').textContent =
+            result.statistics.team_productivity ? `${result.statistics.team_productivity}%` : '0%';
+          document.getElementById('projectCount').textContent = result.statistics.project_count || 0;
+          document.getElementById('activeProjects').textContent = result.statistics.active_projects || 0;
+        } else if (result.success && result.statistics === null) {
+          // User doesn't have access (not manager/admin)
+          statsSection.style.display = 'none';
+        } else {
+          // Error or not initialized
+          statsSection.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Failed to fetch statistics:', error);
+        document.getElementById('statisticsSection').style.display = 'none';
+      }
+    }
+
+    // Update UI periodically
+    setInterval(updateUI, 2000);
+    updateUI();
+
+    // Load statistics on page load
+    refreshStatistics();
+    loadConfig();
+    // Refresh statistics every 60 seconds
+    setInterval(refreshStatistics, 60000);
+  </script>
+</body>
+
+</html>

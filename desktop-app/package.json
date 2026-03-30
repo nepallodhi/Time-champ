@@ -1,0 +1,58 @@
+{
+  "name": "workpulse-desktop",
+  "version": "1.0.0",
+  "description": "WorkPulse Desktop Tracking Client",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "keywords": [
+    "electron",
+    "productivity",
+    "tracking"
+  ],
+  "author": "WorkPulse",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "active-win": "^8.0.0",
+    "axios": "^1.6.0",
+    "screenshot-desktop": "^1.15.0",
+    "uuid": "^13.0.0"
+  },
+  "optionalDependencies": {
+    "robotjs": "^0.6.0"
+  },
+  "build": {
+    "appId": "com.workpulse.desktop",
+    "productName": "WorkPulse Desktop",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.icns",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/icon.png"
+    }
+  }
+}

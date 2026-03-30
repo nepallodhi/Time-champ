@@ -1,0 +1,38 @@
+#!/bin/bash
+# Graceful shutdown script for Sidekiq
+
+# Function to handle shutdown signals
+cleanup() {
+  echo "Received shutdown signal, gracefully stopping Sidekiq..."
+  
+  # Get Sidekiq process ID
+  SIDEKIQ_PID=$(pgrep -f "sidekiq")
+  
+  if [ -n "$SIDEKIQ_PID" ]; then
+    # Send TERM signal for graceful shutdown
+    kill -TERM "$SIDEKIQ_PID"
+    
+    # Wait for process to finish (max 30 seconds)
+    for i in {1..30}; do
+      if ! kill -0 "$SIDEKIQ_PID" 2>/dev/null; then
+        echo "Sidekiq stopped gracefully"
+        exit 0
+      fi
+      sleep 1
+    done
+    
+    # If still running, force kill
+    if kill -0 "$SIDEKIQ_PID" 2>/dev/null; then
+      echo "Sidekiq did not stop gracefully, forcing shutdown..."
+      kill -KILL "$SIDEKIQ_PID"
+    fi
+  fi
+  
+  exit 0
+}
+
+# Trap signals for graceful shutdown
+trap cleanup SIGTERM SIGINT
+
+# Start Sidekiq
+exec bundle exec sidekiq

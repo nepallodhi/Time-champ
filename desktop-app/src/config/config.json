@@ -1,0 +1,6 @@
+{
+  "apiUrl": "http://localhost:3005/api/v1",
+  "token": "",
+  "screenshotInterval": 30000,
+  "idleThreshold": 300000
+}
